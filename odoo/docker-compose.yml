@@ -1,0 +1,94 @@
+version: '3.7'
+
+services: 
+    odoo17:
+        build: ./
+        restart: always
+        #depends_on:
+        #    - postgresql
+        #healthcheck:
+        #    test: ["CMD-SHELL", "curl -X HEAD -I http://127.0.0.1:8069"]
+        #    interval: 10s
+        #    timeout: 10s
+        #    retries: 10
+        volumes: 
+            - odoo17-data:/var/lib/odoo/
+            - ./extra-addons/:/mnt/extra-addons/
+            - ./odoo.conf:/etc/odoo/odoo.conf
+            
+        #ports:
+        #    - 8069:8069
+        env_file:
+            - ./.env
+        networks:
+            - traefik-network
+            - postgres-network
+        labels:
+            - "traefik.enable=true"
+            
+            #----------------------------------------------- routers for: odoo --------------------------------------------------
+            # http
+            - "traefik.http.routers.odoo17-http.rule=Host(`erp.kallpaandina.com`)"
+            - "traefik.http.routers.odoo17-http.entrypoints=web"
+            - "traefik.http.routers.odoo17-http.service=odoo17"
+            # Revisar redireccion
+            #- "traefik.http.routers.odoo17-http.middlewares=redirect@file" 
+
+            # https
+            - "traefik.http.routers.odoo17-https.rule=Host(`erp.kallpaandina.com`)"
+            - "traefik.http.routers.odoo17-https.entrypoints=websecure"
+            - "traefik.http.routers.odoo17-https.service=odoo17"
+            - "traefik.http.routers.odoo17-https.tls.certresolver=myresolver"
+            - "traefik.http.routers.odoo17-https.middlewares=gzip,sslheader,limit"
+            
+            #----------------------------- routes for: odoo/web/database || odoo/website/info  -----------------------------
+            # http
+            - "traefik.http.routers.odoo17-db-http.rule=Host(`erp.kallpaandina.com`) && (PathPrefix(`/web/database`) || PathPrefix(`/website/info`))"
+            - "traefik.http.routers.odoo17-db-http.entrypoints=web"
+            - "traefik.http.routers.odoo17-db-http.service=odoo17"
+            - "traefik.http.services.odoo17-db-http.loadbalancer.server.port=8069"
+
+            # https
+            - "traefik.http.routers.odoo17-db-https.rule=Host(`erp.kallpaandina.com`) && (PathPrefix(`/web/database`) || PathPrefix(`/website/info`))"
+            - "traefik.http.routers.odoo17-db-https.entrypoints=websecure"
+            - "traefik.http.routers.odoo17-db-https.service=odoo17"
+            - "traefik.http.services.odoo17-db-https.loadbalancer.server.port=8069"
+            - "traefik.http.routers.odoo17-db-https.tls.certresolver=myresolver"
+            - "traefik.http.routers.odoo17-db-https.middlewares=gzip,sslheader,limit"
+            
+            #---------------------------------------- routes for: odoo/websocket ------------------------------------------------
+            # http
+            - "traefik.http.routers.odoo17-im-http.rule=Host(`erp.kallpaandina.com`) && (PathPrefix(`/websocket`))"
+            - "traefik.http.routers.odoo17-im-http.entrypoints=web"
+            - "traefik.http.routers.odoo17-im-http.service=odoo17-im"
+
+            # https
+            - "traefik.http.routers.odoo17-im-https.rule=Host(`erp.kallpaandina.com`) && (PathPrefix(`/websocket`))"
+            - "traefik.http.routers.odoo17-im-https.entrypoints=websecure"
+            - "traefik.http.routers.odoo17-im-https.service=odoo17-im"
+            - "traefik.http.routers.odoo17-im-https.tls.certresolver=myresolver"
+            - "traefik.http.routers.odoo17-im-https.middlewares=gzip,sslheader,limit"
+
+            #====================================================== services ===========================================================
+            - "traefik.http.services.odoo17.loadbalancer.server.port=8069"
+            - "traefik.http.services.odoo17-im.loadbalancer.server.port=8072"
+
+            - "traefik.docker.network=traefik-network"
+            #===================================================== middlewares =========================================================
+             # http to https
+            - "traefik.http.middlewares.odoo17-redirect.redirectscheme.scheme=https"
+            - "traefik.http.middlewares.odoo17-redirect.redirectscheme.permanent=true"
+            - "traefik.http.routers.odoo17-http.middlewares=odoo17-redirect"
+            - "traefik.http.routers.odoo17-db-http.middlewares=odoo17-redirect"
+            - "traefik.http.routers.odoo17-im-http.middlewares=odoo17-redirect"
+            - "traefik.http.middlewares.gzip.compress=true"
+            - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+            - "traefik.http.middlewares.limit.buffering.memRequestBodyBytes=20971520"
+            - "traefik.http.middlewares.limit.buffering.maxRequestBodyBytes=20971520"
+volumes: 
+    odoo17-data:
+networks:
+    traefik-network:
+        external: true
+    postgres-network:
+        external: true
