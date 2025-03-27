@@ -25,11 +25,11 @@ services:
             - "traefik.http.routers.odoo18-http.service=odoo18"
 
             # https
-            #- "traefik.http.routers.odoo18-https.rule=Host(`demo.example.com`)"
-            #- "traefik.http.routers.odoo18-https.entrypoints=websecure"
-            #- "traefik.http.routers.odoo18-https.service=odoo18"
-            #- "traefik.http.routers.odoo18-https.tls.certresolver=myresolver"
-            #- "traefik.http.routers.odoo18-https.middlewares=gzip,sslheader,limit"
+            - "traefik.http.routers.odoo18-https.rule=Host(`demo.example.com`)"
+            - "traefik.http.routers.odoo18-https.entrypoints=websecure"
+            - "traefik.http.routers.odoo18-https.service=odoo18"
+            - "traefik.http.routers.odoo18-https.tls.certresolver=myresolver"
+            - "traefik.http.routers.odoo18-https.middlewares=gzip,sslheader,limit"
             
             #----------------------------- routes for: odoo/web/database || odoo/website/info  -----------------------------
             # http
@@ -39,12 +39,12 @@ services:
             - "traefik.http.services.odoo18-db-http.loadbalancer.server.port=8069"
 
             # https
-            #- "traefik.http.routers.odoo18-db-https.rule=Host(`demo.example.com`) && (PathPrefix(`/web/database`) || PathPrefix(`/website/info`))"
-            #- "traefik.http.routers.odoo18-db-https.entrypoints=websecure"
-            #- "traefik.http.routers.odoo18-db-https.service=odoo18"
-            #- "traefik.http.services.odoo18-db-https.loadbalancer.server.port=8069"
-            #- "traefik.http.routers.odoo18-db-https.tls.certresolver=myresolver"
-            #- "traefik.http.routers.odoo18-db-https.middlewares=gzip,sslheader,limit"
+            - "traefik.http.routers.odoo18-db-https.rule=Host(`demo.example.com`) && (PathPrefix(`/web/database`) || PathPrefix(`/website/info`))"
+            - "traefik.http.routers.odoo18-db-https.entrypoints=websecure"
+            - "traefik.http.routers.odoo18-db-https.service=odoo18"
+            - "traefik.http.services.odoo18-db-https.loadbalancer.server.port=8069"
+            - "traefik.http.routers.odoo18-db-https.tls.certresolver=myresolver"
+            - "traefik.http.routers.odoo18-db-https.middlewares=gzip,sslheader,limit"
             
             #---------------------------------------- routes for: odoo/websocket ------------------------------------------------
             # http
@@ -53,11 +53,11 @@ services:
             - "traefik.http.routers.odoo18-im-http.service=odoo18-im"
 
             # https
-            #- "traefik.http.routers.odoo18-im-https.rule=Host(`demo.example.com`) && (PathPrefix(`/websocket`))"
-            #- "traefik.http.routers.odoo18-im-https.entrypoints=websecure"
-            #- "traefik.http.routers.odoo18-im-https.service=odoo18-im"
-            #- "traefik.http.routers.odoo18-im-https.tls.certresolver=myresolver"
-            #- "traefik.http.routers.odoo18-im-https.middlewares=gzip,sslheader,limit"
+            - "traefik.http.routers.odoo18-im-https.rule=Host(`demo.example.com`) && (PathPrefix(`/websocket`))"
+            - "traefik.http.routers.odoo18-im-https.entrypoints=websecure"
+            - "traefik.http.routers.odoo18-im-https.service=odoo18-im"
+            - "traefik.http.routers.odoo18-im-https.tls.certresolver=myresolver"
+            - "traefik.http.routers.odoo18-im-https.middlewares=gzip,sslheader,limit"
 
             #====================================================== services ===========================================================
             - "traefik.http.services.odoo18.loadbalancer.server.port=8069"
@@ -65,13 +65,13 @@ services:
             - "traefik.docker.network=traefik-network"
             #===================================================== middlewares =========================================================
              # http to https
-            #- "traefik.http.middlewares.odoo18-redirect.redirectscheme.scheme=https"
-            #- "traefik.http.middlewares.odoo18-redirect.redirectscheme.permanent=true"
-            #- "traefik.http.routers.odoo18-http.middlewares=odoo18-redirect"
-            #- "traefik.http.routers.odoo18-db-http.middlewares=odoo18-redirect"
-            #- "traefik.http.routers.odoo18-im-http.middlewares=odoo18-redirect"
+            - "traefik.http.middlewares.odoo18-redirect.redirectscheme.scheme=https"
+            - "traefik.http.middlewares.odoo18-redirect.redirectscheme.permanent=true"
+            - "traefik.http.routers.odoo18-http.middlewares=odoo18-redirect"
+            - "traefik.http.routers.odoo18-db-http.middlewares=odoo18-redirect"
+            - "traefik.http.routers.odoo18-im-http.middlewares=odoo18-redirect"
             - "traefik.http.middlewares.gzip.compress=true"
-            #- "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+            - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
             - "traefik.http.middlewares.limit.buffering.memRequestBodyBytes=20971520"
             - "traefik.http.middlewares.limit.buffering.maxRequestBodyBytes=20971520"
 volumes: 
